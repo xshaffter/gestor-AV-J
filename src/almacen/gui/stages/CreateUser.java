@@ -35,9 +35,7 @@ public class CreateUser extends Stage {
         gPane.setVgap(10);
         gPane.setPadding(new Insets(10));
 
-        btnAceptar.setOnAction((ActionEvent e) -> {
-            createUser(nombre.getText(), pass.getText());
-        });
+        btnAceptar.setOnAction((ActionEvent e) -> createUser(nombre.getText(), pass.getText()));
         gPane.setOnKeyPressed((KeyEvent e) -> {
             if (e.getCode().equals(KeyCode.ENTER)) {
                 createUser(nombre.getText(), pass.getText());

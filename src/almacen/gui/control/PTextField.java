@@ -4,8 +4,7 @@ package almacen.gui.control;
 public class PTextField extends javafx.scene.control.TextField {
 
     /**
-     *
-     * @param  placeholder
+     * @param placeholder texto que se quiere colocar
      */
     public PTextField(final String placeholder) {
         setPromptText(placeholder);
@@ -13,10 +12,6 @@ public class PTextField extends javafx.scene.control.TextField {
     }
 
     @SuppressWarnings("unused")
-    /**
-     * @param text
-     * @param confirm
-     */
     public PTextField(final String text, final boolean confirm) {
         super(text);
     }
@@ -49,6 +44,7 @@ public class PTextField extends javafx.scene.control.TextField {
         }
     }
 
+    @SuppressWarnings("unused")
     public float getFloat() {
         try {
             return Float.parseFloat(this.getText());
@@ -57,6 +53,7 @@ public class PTextField extends javafx.scene.control.TextField {
         }
     }
 
+    @SuppressWarnings("unused")
     public long getLong() {
         try {
             return Long.parseLong(this.getText());
@@ -65,6 +62,7 @@ public class PTextField extends javafx.scene.control.TextField {
         }
     }
 
+    @SuppressWarnings("unused")
     public boolean getBoolean() {
         return Boolean.parseBoolean(this.getText());
     }

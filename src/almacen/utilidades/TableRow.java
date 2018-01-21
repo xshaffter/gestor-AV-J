@@ -19,12 +19,12 @@ public class TableRow {
 
     /**
      *
-     * @param producto
-     * @param productos
-     * @param cantidades
-     * @param precios
-     * @param totales
-     * @param total
+     * @param producto producto que se quiere añadir a la lista
+     * @param productos lista de productos en el gestor
+     * @param cantidades lista de cantidades en el gestor
+     * @param precios lista de precios en el gestor
+     * @param totales lista de precios totales en el gestor
+     * @param total localizacion del precio final del producto
      */
     public TableRow(final Producto producto, final FlowPane productos, final FlowPane cantidades, final FlowPane precios, final FlowPane totales, final Label total) {
         try {

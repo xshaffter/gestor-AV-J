@@ -103,7 +103,7 @@ public class Decryptor {
         String decrypted = "";
         final String kp = "kQ6Gthp364CzeSnV";
 
-        texto = Global.DRIVER.getKP();
+        texto = Global.DRIVER.gKP();
 
         try {
             final byte[] message = Base64.decodeBase64(texto.getBytes("utf-8"));

@@ -11,34 +11,17 @@ import javafx.scene.control.Alert.AlertType;
 
 public class Ticket {
 
-    private String[] content = {
-            "{{titulo}}",
-            "--direccion--",
-            "--RFC--",
-            "--telefono--",
-            Global.SEPARADOR,
-            "{{datos}}",
-            Global.SEPARADOR,
-            "Total venta{{final}}",
-            "Recibió{{recibo}}",
-            "Cambio{{cambio}}",
-            Global.SEPARADOR,
-            "{{numero de ticket}}",
-            "{{fecha}}",
-            "Gracias por su compra"};
-
     /**
-     * @param cantidades
-     * @param productos
-     * @param precios
-     * @param totales
-     * @param recibo
+     * @param cantidades lista de cantidades de productos en el ticket
+     * @param productos lista de productos en el ticket
+     * @param precios lista de precios en el ticket
+     * @param recibo cantidad de dinero que recibio del cliente
      */
     public Ticket(final String[] cantidades, final String[] productos, final String[] precios, final String recibo) {
         Alert alert;
         try {
             Double precio = 0.0;
-            String precioFinal, cambio, datos[];
+            final String precioFinal, cambio, datos[];
 
             datos = new String[productos.length];
             for (byte i = 0; i < datos.length; i++) {
@@ -66,6 +49,21 @@ public class Ticket {
             precioFinal = "" + precio;
             cambio = "" + (Double.parseDouble(recibo) - precio);
             if (Double.parseDouble(cambio) >= 0) {
+                String[] content = {
+                        "{{titulo}}",
+                        "--direccion--",
+                        "--RFC--",
+                        "--telefono--",
+                        Global.SEPARADOR,
+                        "{{datos}}",
+                        Global.SEPARADOR,
+                        "Total venta{{final}}",
+                        "Recibió{{recibo}}",
+                        "Cambio{{cambio}}",
+                        Global.SEPARADOR,
+                        "{{numero de ticket}}",
+                        "{{fecha}}",
+                        "Gracias por su compra"};
                 content[0] = Utilities.equiparableString(Global.NOMBRE_LOCAL, Global.TICKET_LENGTH);
                 content[7] = "Total venta" + Utilities.separateStrings("Total venta", "$" + Global.DFO00_00.format(Double.parseDouble(precioFinal)), Global.TICKET_LENGTH);
                 content[8] = "Recibió" + Utilities.separateStrings("Recibio", "$" + Global.DFO00_00.format(Double.parseDouble(recibo)), Global.TICKET_LENGTH);

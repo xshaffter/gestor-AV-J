@@ -6,9 +6,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 
-public class PaneIngreso extends BorderPane {
+class PaneIngreso extends BorderPane {
 
-    public PaneIngreso() {
+    PaneIngreso() {
         final FlowPane flow = new FlowPane();
         final Label informacion = new Label();
         final PTextField edtCodigo, edtNombre, edtPrecio, edtUbicacion;

@@ -4,8 +4,6 @@ import almacen.gui.control.PasswordDialog;
 import almacen.gui.stages.CreateUser;
 import almacen.gui.panes.MenuPrincipal;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Optional;
 
 import javafx.application.Application;
@@ -38,14 +36,15 @@ public class GestorAlmacen extends Application {
             input.setHeaderText("Esta palabra clave es la que sera usada para mantener segura su informacion, guardela en un lugar seguro");
             input.setContentText("ingrese la palabra clave");
             final Optional<String> response = input.showAndWait();
-            Global.DRIVER.inertKP(response.get());
-            Global.initKP(response.get());
-
+            if (response.isPresent()) {
+                Global.DRIVER.iKP(response.get());
+                Global.initKP(response.get());
+            }
             input2.setTitle("clave de administrador");
             input2.setHeaderText("Esta contraseña sera la usada como el administrador del programa, no conservara un nombre\nsolo los permisos");
             input2.setContentText("ingrese su contraseña");
             final Optional<String> password = input2.showAndWait();
-            Global.DRIVER.addUser(password.get(), "Administrador", 0);
+            password.ifPresent(s -> Global.DRIVER.addUser(s, "Administrador", 0));
 
         } else {
             Global.initKP();
@@ -107,7 +106,8 @@ public class GestorAlmacen extends Application {
         });
         verUsuarios.setOnAction((ActionEvent e) -> {
             if (verifyAdmin()) {
-
+                //crear una ventana que muestre una lista de los usuarios dentro del sistema
+                System.out.println("");
             } else {
                 final Alert alert = new Alert(AlertType.WARNING);
                 alert.setTitle("Usuario incorrecto");
@@ -147,7 +147,7 @@ public class GestorAlmacen extends Application {
     public static void main(final String[] args) {
         try {
             launch(args);
-        } catch (Exception ex) {
+        } catch (Exception ignored) {
         }
     }
 
@@ -173,11 +173,7 @@ public class GestorAlmacen extends Application {
         input.setTitle("verificacion");
         input.setContentText("ingrese su contraseña");
         final Optional<String> response = input.showAndWait();
-        if (response.isPresent()) {
-            return Global.DRIVER.getUserRank(response.get()) == 0;
-        } else {
-            return false;
-        }
+        return response.isPresent() && Global.DRIVER.getUserRank(response.get()) == 0;
     }
 
 }

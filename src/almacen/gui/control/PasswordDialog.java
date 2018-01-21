@@ -10,16 +10,16 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 
 public class PasswordDialog extends Dialog<String> {
-    private PasswordField passwordField;
+    private final PasswordField passwordField;
 
     public PasswordDialog() {
 
-        ButtonType passwordButtonType = new ButtonType("Aceptar", ButtonData.OK_DONE);
+        final ButtonType passwordButtonType = new ButtonType("Aceptar", ButtonData.OK_DONE);
         getDialogPane().getButtonTypes().addAll(passwordButtonType, ButtonType.CANCEL);
 
         passwordField = new PasswordField();
 
-        HBox hBox = new HBox();
+        final HBox hBox = new HBox();
         hBox.getChildren().add(passwordField);
         hBox.setPadding(new Insets(20));
 
@@ -27,7 +27,7 @@ public class PasswordDialog extends Dialog<String> {
 
         getDialogPane().setContent(hBox);
 
-        Platform.runLater(() -> passwordField.requestFocus());
+        Platform.runLater(passwordField::requestFocus);
 
         setResultConverter(dialogButton -> {
             if (dialogButton == passwordButtonType) {
@@ -35,9 +35,5 @@ public class PasswordDialog extends Dialog<String> {
             }
             return null;
         });
-    }
-
-    public PasswordField getPasswordField() {
-        return passwordField;
     }
 }

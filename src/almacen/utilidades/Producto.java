@@ -1,56 +1,44 @@
 package almacen.utilidades;
 
 import almacen.Global;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import javafx.scene.control.Alert;
 import almacen.gui.control.PLabel;
 
 /**
- *
  * @author HP
  */
 public class Producto {
 
-        private String codigo, nombre, precio;
+    private String nombre, precio;
 
-        public Producto(final String codigo) {
+    private Producto(final String nombre, final String precio) {
+        this.nombre = nombre;
+        this.precio = precio;
+    }
 
-                try {
-                        Global.DRIVER.connect();
-                        final ResultSet rs = Global.DRIVER.select(codigo);
+    private Producto(final double precio) {
+        nombre = "Extra";
+        this.precio = "" + precio;
+    }
 
-                        this.codigo = codigo;
-                        while (rs.next()) {
-                                this.nombre = rs.getString("producto");
-                                this.precio = rs.getString("precio");
-                        }
+    static Producto createProducto(final String nombre, final String precio) {
+        return !precio.isEmpty() ? new Producto(nombre, precio) : null;
+    }
 
-                        Global.DRIVER.disconnect();
-                } catch (SQLException ex) {
-                        final Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle("No se han podido obtener los datos");
-                        alert.setContentText("" + ex);
-                        alert.showAndWait();
-                }
-        }
+    public static Producto createProducto(final double precio) {
+        return precio != 0 ? new Producto(precio) : null;
+    }
 
-        public Producto(final double precio) {
-                nombre = "Extra";
-                this.precio = "" + precio;
-                codigo = "";
-        }
+    public PLabel getNombre() {
+        return new PLabel(nombre);
+    }
 
-        public PLabel getCodigo() {
-                return new PLabel(codigo);
-        }
-
-        public PLabel getNombre() {
-                return new PLabel(nombre);
-        }
-
-        public PLabel getPrecio() {
-                return new PLabel(precio);
-        }
+    public PLabel getPrecio() {
+        return new PLabel(precio);
+    }
 
 }
