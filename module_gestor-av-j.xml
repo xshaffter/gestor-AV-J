@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_gestor-av-j" default="compile.module.gestor-av-j">
+  <dirname property="module.gestor-av-j.basedir" file="${ant.file.module_gestor-av-j}"/>
+  
+  <property name="module.jdk.home.gestor-av-j" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.gestor-av-j" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.gestor-av-j" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.gestor-av-j" value="-encoding UTF-8 -source 9 -target 9 ${compiler.args}"/>
+  
+  <property name="gestor-av-j.output.dir" value="${module.gestor-av-j.basedir}/out/production/gestor-AV-J"/>
+  <property name="gestor-av-j.testoutput.dir" value="${module.gestor-av-j.basedir}/out/test/gestor-AV-J"/>
+  
+  <path id="gestor-av-j.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="gestor-av-j.module.production.classpath">
+    <path refid="${module.jdk.classpath.gestor-av-j}"/>
+    <path refid="library.lib.classpath"/>
+  </path>
+  
+  <path id="gestor-av-j.runtime.production.module.classpath">
+    <pathelement location="${gestor-av-j.output.dir}"/>
+    <path refid="library.lib.classpath"/>
+  </path>
+  
+  <path id="gestor-av-j.module.classpath">
+    <path refid="${module.jdk.classpath.gestor-av-j}"/>
+    <pathelement location="${gestor-av-j.output.dir}"/>
+    <path refid="library.lib.classpath"/>
+  </path>
+  
+  <path id="gestor-av-j.runtime.module.classpath">
+    <pathelement location="${gestor-av-j.testoutput.dir}"/>
+    <pathelement location="${gestor-av-j.output.dir}"/>
+    <path refid="library.lib.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.gestor-av-j">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.gestor-av-j">
+    <patternset refid="excluded.from.module.gestor-av-j"/>
+  </patternset>
+  
+  <path id="gestor-av-j.module.sourcepath">
+    <dirset dir="${module.gestor-av-j.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.gestor-av-j" depends="compile.module.gestor-av-j.production,compile.module.gestor-av-j.tests" description="Compile module gestor-AV-J"/>
+  
+  <target name="compile.module.gestor-av-j.production" depends="register.custom.compilers" description="Compile module gestor-AV-J; production classes">
+    <mkdir dir="${gestor-av-j.output.dir}"/>
+    <javac2 destdir="${gestor-av-j.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.gestor-av-j}/javac">
+      <compilerarg line="${compiler.args.gestor-av-j}"/>
+      <bootclasspath refid="gestor-av-j.module.bootclasspath"/>
+      <classpath refid="gestor-av-j.module.production.classpath"/>
+      <src refid="gestor-av-j.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.gestor-av-j"/>
+    </javac2>
+    
+    <copy todir="${gestor-av-j.output.dir}">
+      <fileset dir="${module.gestor-av-j.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.gestor-av-j.tests" depends="register.custom.compilers,compile.module.gestor-av-j.production" description="compile module gestor-AV-J; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.gestor-av-j" description="cleanup module">
+    <delete dir="${gestor-av-j.output.dir}"/>
+    <delete dir="${gestor-av-j.testoutput.dir}"/>
+  </target>
+</project>
