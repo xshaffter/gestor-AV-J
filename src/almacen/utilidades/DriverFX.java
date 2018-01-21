@@ -2,9 +2,13 @@ package almacen.utilidades;
 
 import java.io.*;
 import java.sql.*;
+import java.util.Optional;
 
+import almacen.Global;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+
+import javax.xml.transform.Result;
 
 /**
  * Fecha de la clase: 17/06/2017 Autor: Alfredo
@@ -51,25 +55,26 @@ public final class DriverFX {
         }
     }
 
-    public void create() throws SQLException {
-        final File carpeta = new File("C:/GAFX/");
-        carpeta.mkdirs();
-        connect();
-        execute("CREATE TABLE 'productos' ( `producto` VARCHAR ( 255 ) UNIQUE, `precio` DOUBLE, `codigo` INTEGER UNIQUE, `ubicacion` INTEGER NOT NULL, `cantidad` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`codigo`) )");
-        execute("CREATE TABLE 'informacion' ( `num_ticket` INTEGER DEFAULT 1 )");
-
-        disconnect();
+    public boolean create() {
+        try {
+            final File carpeta = new File("C:/GAFX/");
+            carpeta.mkdirs();
+            connect();
+            execute("CREATE TABLE 'productos' ( `producto` VARCHAR ( 255 ) UNIQUE, `precio` DOUBLE, `codigo` INTEGER UNIQUE, `ubicacion` INTEGER NOT NULL, `cantidad` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`codigo`) )");
+            execute("CREATE TABLE \"informacion\" ( `num_ticket` INTEGER DEFAULT 1, `keyword` varchar(255) )");
+            execute("CREATE TABLE \"usuarios\" ( `password` varchar ( 255 ) NOT NULL DEFAULT 'unable' UNIQUE, `rango` INTEGER NOT NULL DEFAULT 0, `nombre` varchar(70), PRIMARY KEY(`password`) )");
+            return true;
+        } catch (SQLException sqlex) {
+            return false;
+        } finally {
+            disconnect();
+        }
 
     }
 
-    public boolean execute(final String sql) {
-        try {
-            final Statement stmt = conn.createStatement();
-            stmt.execute(sql);
-            return true;
-        } catch (SQLException ex) {
-            return false;
-        }
+    private void execute(final String sql) throws SQLException {
+        final Statement stmt = conn.createStatement();
+        stmt.execute(sql);
     }
 
     //return Querys
@@ -115,7 +120,7 @@ public final class DriverFX {
         }
     }
 
-    public void refreshProducts(final String codigo) {
+    private void refreshProducts(final String codigo) {
         try {
             connect();
             final String sql = "update productos set cantidad = cantidad + 1 where codigo = ?";
@@ -177,5 +182,96 @@ public final class DriverFX {
             }
         }
         return result;
+    }
+
+    public String getKP() {
+        String ekp = "";
+        try {
+            connect();
+            final String sql = "select * from informacion";
+            final PreparedStatement stmt = conn.prepareStatement(sql);
+            final ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                ekp = rs.getString("keyword");
+            }
+        } catch (SQLException e) {
+        } finally {
+            disconnect();
+        }
+
+        return ekp;
+    }
+
+    public int getUserRank(final String password) {
+        int rank = 3;
+        try {
+            connect();
+            final ResultSet res;
+            final String sql = "select rango from usuarios where password = ?";
+            final String encryptedPass = Decryptor.encrypt(password);
+            final PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, encryptedPass);
+            res = stmt.executeQuery();
+            while(res.next()) {
+                rank = res.getInt("rango");
+            }
+        } catch (SQLException e) {
+        } finally {
+            disconnect();
+        }
+
+        return rank;
+    }
+
+    public void inertKP(String s) {
+        try {
+            connect();
+            final String sql = "insert into informacion values(1,?)";
+            final PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, Decryptor.setKP(s));
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+        } finally {
+            disconnect();
+        }
+    }
+
+    public void addUser(final String password, final String nombre, final int rango) {
+        try {
+            connect();
+            final String sql = "insert into usuarios values(?,?,?)";
+            final PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, Decryptor.encrypt(password));
+            stmt.setInt(2, rango);
+            stmt.setString(3, nombre);
+            stmt.executeUpdate();
+        } catch (SQLException sqlex) {
+        } finally {
+            disconnect();
+        }
+    }
+
+    public Session getUser(final String password) {
+        String name = "";
+        int rank = 3;
+        try {
+            connect();
+            final ResultSet res;
+            final String sql = "select * from usuarios where password = ?";
+            final String encryptedPass = Decryptor.encrypt(password);
+            final PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, encryptedPass);
+            res = stmt.executeQuery();
+            while (res.next()) {
+                rank = res.getInt("rango");
+                name = res.getString("nombre");
+            }
+            res.close();
+        } catch (Exception ex) {
+            return null;
+        } finally {
+            disconnect();
+        }
+        return Session.createSesion(rank, name);
     }
 }

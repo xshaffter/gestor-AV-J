@@ -1,154 +1,184 @@
 package almacen;
 
+import almacen.gui.control.PasswordDialog;
+import almacen.gui.stages.CreateUser;
 import almacen.gui.panes.MenuPrincipal;
 
-import java.io.UnsupportedEncodingException;
-import java.security.*;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.Optional;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
-import javafx.scene.control.PasswordField;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
-import org.apache.commons.codec.binary.Base64;
-
-import javax.crypto.*;
-import javax.crypto.spec.*;
 
 public class GestorAlmacen extends Application {
 
-        private BorderPane main;
-        private PasswordField password;
+    private BorderPane main;
+    private MenuBar menu = new MenuBar();
+    private Menu sesion;
+    private PasswordField password;
 
-        @Override
-        public void start(final Stage primaryStage) {
-            try {
-                Global.DRIVER.create();
-            } catch (SQLException ex) {
-            }
+    @Override
+    public void start(final Stage primaryStage) {
 
-            main = new BorderPane();
-            final FlowPane paneLogIn = new FlowPane(Orientation.VERTICAL);
-            final FlowPane paneBotones = new FlowPane();
-            final Button iniciar = new Button("Iniciar Sesion");
-            final Scene scene = new Scene(main);
+        if (Global.FIRST_ACCESS) {
 
-            paneBotones.getChildren().add(iniciar);
+            final PasswordDialog input = new PasswordDialog();
+            final PasswordDialog input2 = new PasswordDialog();
+            input.setTitle("clave de seguridad");
+            input.setHeaderText("Esta palabra clave es la que sera usada para mantener segura su informacion, guardela en un lugar seguro");
+            input.setContentText("ingrese la palabra clave");
+            final Optional<String> response = input.showAndWait();
+            Global.DRIVER.inertKP(response.get());
+            Global.initKP(response.get());
 
-            primaryStage.setTitle(Global.NOMBRE_LOCAL);
+            input2.setTitle("clave de administrador");
+            input2.setHeaderText("Esta contraseña sera la usada como el administrador del programa, no conservara un nombre\nsolo los permisos");
+            input2.setContentText("ingrese su contraseña");
+            final Optional<String> password = input2.showAndWait();
+            Global.DRIVER.addUser(password.get(), "Administrador", 0);
 
-            password = new PasswordField();
-            password.setPromptText("Contraseña");
+        } else {
+            Global.initKP();
+        }
 
-            password.setOnKeyPressed((KeyEvent e) -> {
-                switch (e.getCode()) {
-                    case ENTER:
-                        verifyPassword(password.getText());
-                        break;
-                }
-            });
-            iniciar.setOnAction((ActionEvent) -> {
-                verifyPassword(password.getText());
-            });
 
+        main = new BorderPane();
+
+        final Menu admin = new Menu("Administrador");
+        final Menu usuarios = new Menu("usuarios");
+        final MenuItem crearUsuario, verUsuarios, cerrarSesion, iniciarSesion;
+
+        final FlowPane paneLogIn = new FlowPane(Orientation.VERTICAL);
+        final FlowPane paneBotones = new FlowPane();
+        final Button iniciar = new Button("Iniciar Sesion");
+        final Scene scene = new Scene(main);
+
+        //Tool bar
+        crearUsuario = new MenuItem("Crear Usuario");
+        verUsuarios = new MenuItem("Lista Usuarios");
+        sesion = new Menu("Sesion");
+        cerrarSesion = new MenuItem("Cerrar");
+        iniciarSesion = new MenuItem("Iniciar");
+
+        menu.getMenus().add(admin);
+        admin.getItems().add(usuarios);
+        usuarios.getItems().add(crearUsuario);
+        usuarios.getItems().add(verUsuarios);
+
+        menu.getMenus().add(sesion);
+        sesion.getItems().add(iniciarSesion);
+
+        main.setTop(menu);
+
+        iniciarSesion.setOnAction((ActionEvent e) -> {
+            sesion.getItems().removeAll(iniciarSesion);
+            sesion.getItems().add(cerrarSesion);
+            menu.getMenus().removeAll(sesion);
             main.setCenter(paneLogIn);
-
-            paneLogIn.setAlignment(Pos.CENTER);
-            paneLogIn.getChildren().add(password);
-            paneLogIn.getChildren().add(paneBotones);
-
-            primaryStage.setMaximized(true);
-            primaryStage.setScene(scene);
-            primaryStage.show();
-        }
-
-        public static void main(final String[] args) {
-            try {
-                launch(args);
-            } catch (Exception ex) {
+        });
+        cerrarSesion.setOnAction((ActionEvent e) -> {
+            if (Global.currentSession != null) {
+                sesion.getItems().removeAll(cerrarSesion);
+                sesion.getItems().add(iniciarSesion);
+                Global.currentSession = null;
+                main.setCenter(new FlowPane());
             }
-        }
+        });
 
-        private void verifyPassword(final String pass) {
-            final String p = DXDecryptoresO6hxM0.decode("ZRSzL8T3APpXyGfOPFxagg==");
-            if(pass.equals(p)) {
-                final MenuPrincipal menu = new MenuPrincipal();
-                menu.setAlignment(Pos.CENTER);
-                main.setCenter(menu);
+        crearUsuario.setOnAction((ActionEvent e) -> {
+            if (verifyAdmin()) {
+                new CreateUser();
             } else {
-                final Alert alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Contraseña incorrecta");
-                alert.setContentText("La contraseña ingresada no es calida");
+                final Alert alert = new Alert(AlertType.WARNING);
+                alert.setTitle("Usuario incorrecto");
+                alert.setContentText("La contraseña ingresada es incorrecta");
                 alert.showAndWait();
-                password.clear();
             }
+        });
+        verUsuarios.setOnAction((ActionEvent e) -> {
+            if (verifyAdmin()) {
+
+            } else {
+                final Alert alert = new Alert(AlertType.WARNING);
+                alert.setTitle("Usuario incorrecto");
+                alert.setContentText("La contraseña ingresada es incorrecta");
+                alert.showAndWait();
+            }
+        });
+
+        //Tool bar-end
+
+        paneBotones.getChildren().add(iniciar);
+
+        primaryStage.setTitle(Global.NOMBRE_LOCAL);
+
+        password = new PasswordField();
+        password.setPromptText("Contraseña");
+
+        password.setOnKeyPressed((KeyEvent e) -> {
+            switch (e.getCode()) {
+                case ENTER:
+                    verifyPassword(password.getText());
+                    break;
+            }
+        });
+        iniciar.setOnAction((ActionEvent) -> verifyPassword(password.getText()));
+
+        paneLogIn.setAlignment(Pos.CENTER);
+        paneLogIn.getChildren().add(password);
+        paneLogIn.getChildren().add(paneBotones);
+        paneBotones.setAlignment(Pos.CENTER);
+
+        primaryStage.setMaximized(true);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    public static void main(final String[] args) {
+        try {
+            launch(args);
+        } catch (Exception ex) {
         }
+    }
+
+    private void verifyPassword(final String pass) {
+        Global.currentSession = Global.DRIVER.getUser(pass);
+        if (!Global.currentSession.getName().isEmpty()) {
+            final MenuPrincipal menu = new MenuPrincipal();
+            menu.setAlignment(Pos.CENTER);
+            main.setCenter(menu);
+            this.menu.getMenus().add(sesion);
+        } else {
+            final Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Contraseña incorrecta");
+            alert.setContentText("La contraseña ingresada no es valida");
+            alert.showAndWait();
+        }
+        password.clear();
+
+    }
+
+    private boolean verifyAdmin() {
+        final PasswordDialog input = new PasswordDialog();
+        input.setTitle("verificacion");
+        input.setContentText("ingrese su contraseña");
+        final Optional<String> response = input.showAndWait();
+        if (response.isPresent()) {
+            return Global.DRIVER.getUserRank(response.get()) == 0;
+        } else {
+            return false;
+        }
+    }
 
 }
 
-class DXDecryptoresO6hxM0 {
-    static String algo = "DESede";
-    static String kp = "kQ6Gthp364CzeSnV";
-
-    public static String decode(final String texto) {
-        String decrypted = "";
-        try {
-            final byte[] message = Base64.decodeBase64(texto.getBytes("utf-8"));
-            final MessageDigest md = MessageDigest.getInstance("MD5");
-            final byte[] digestOfPassword = md.digest(kp.getBytes("utf-8"));
-            final byte[] keyBytes = Arrays.copyOf(digestOfPassword, 24);
-            final SecretKey key = new SecretKeySpec(keyBytes, algo);
-
-            final Cipher decipher = Cipher.getInstance(algo);
-            decipher.init(Cipher.DECRYPT_MODE, key);
-
-            final byte[] plainText = decipher.doFinal(message);
-
-            decrypted = new String(plainText, "UTF-8");
-
-        } catch (UnsupportedEncodingException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException ex) {
-
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("fallo al desencriptar datos");
-            alert.setHeaderText("fallo al desencriptar datos");
-            alert.setContentText("" + ex);
-            alert.showAndWait();
-        }
-        return decrypted;
-    }
-
-    public static String encrypt(final String cadena) {
-        String encrypted = "";
-        try {
-            final MessageDigest md = MessageDigest.getInstance("MD5");
-            final byte[] digestOfPassword = md.digest(kp.getBytes("utf-8"));
-            final byte[] keyBytes = Arrays.copyOf(digestOfPassword, 24);
-
-            final SecretKeySpec key = new SecretKeySpec(keyBytes, "DESede");
-            final Cipher cipher = Cipher.getInstance("DESede");
-            cipher.init(Cipher.ENCRYPT_MODE, key);
-
-            final byte[] plainTextBytes = cadena.getBytes("utf-8");
-            final byte[] buf = cipher.doFinal(plainTextBytes);
-            final byte[] base64Bytes = Base64.encodeBase64(buf);
-            encrypted = new String(base64Bytes);
-        } catch (UnsupportedEncodingException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException ex) {
-
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("fallo al encriptar datos");
-            alert.setHeaderText("fallo al encriptar datos");
-            alert.setContentText("" + ex);
-            alert.showAndWait();
-        }
-        return encrypted;
-    }
-}

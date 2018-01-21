@@ -13,7 +13,6 @@
       <root url="jar://$PROJECT_DIR$/dist/lib/commons-collections4-4.1.jar!/" />
       <root url="jar://$PROJECT_DIR$/dist/lib/apache-poi.jar!/" />
       <root url="jar://$PROJECT_DIR$/dist/lib/commons-logging-1.2.jar!/" />
-      <root url="jar://$PROJECT_DIR$/dist/lib/Util.jar!/" />
       <root url="jar://$PROJECT_DIR$/dist/lib/derby.jar!/" />
       <root url="jar://$PROJECT_DIR$/dist/lib/poi-scratchpad-3.17.jar!/" />
       <root url="jar://$PROJECT_DIR$/dist/lib/apache-poi-ooxml.jar!/" />
